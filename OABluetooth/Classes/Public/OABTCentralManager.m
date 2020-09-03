@@ -63,7 +63,7 @@
         self.scanDuration = 3;
         self.autoReconnectionInterval = 5;
         _discoveredPeripherals = [NSMutableArray arrayWithCapacity:5];
-        _connectedPeripherals = [NSMutableArray arrayWithCapacity:5];   
+        _connectedPeripherals = [NSMutableArray arrayWithCapacity:5];
         
         _streamMap = [NSMapTable weakToWeakObjectsMapTable];
         
@@ -741,6 +741,17 @@ __GETTER_LAZY(NSMutableDictionary, readRssiBlockMap, [NSMutableDictionary dictio
     
     if(self.isAutoReconnectionEnabled) //make auto connections
     {
+        BOOL isConnected = NO;
+        for (CBPeripheral *p in self.connectedPeripherals) {
+            if (p.state == CBPeripheralStateConnected || p.state == CBPeripheralStateConnecting) {
+                isConnected = YES;
+                break;
+            }
+        }
+        // 已连接设备,不再自动连接发现的设备
+        if (isConnected) {
+            return;
+        }
         NSSet *autoConnectSet = self.autoConnectPeripheralIDs;
         if([autoConnectSet containsObject:peripheral.identifier.UUIDString])
             [self inter_connectPeripheral:peripheral];
